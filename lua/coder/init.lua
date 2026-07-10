@@ -10,21 +10,33 @@ function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 end
 
-local function get_buffer_files()
-  local files = {}
+local function get_context_paths()
+  local paths = { "." }
+  local seen = { ["."] = true }
+
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_loaded(buf) then
-      local name = vim.api.nvim_buf_get_name(buf)
-      local buftype = vim.api.nvim_buf_get_option(buf, "buftype")
-      if name ~= "" and buftype == "" then
-        local rel_path = vim.fn.fnamemodify(name, ":.")
-        if vim.fn.filereadable(rel_path) == 1 then
-          table.insert(files, rel_path)
-        end
-      end
+    if not vim.api.nvim_buf_is_loaded(buf) then
+      goto next_buffer
     end
+
+    local name = vim.api.nvim_buf_get_name(buf)
+    local buftype = vim.api.nvim_buf_get_option(buf, "buftype")
+    if name == "" or buftype ~= "" then
+      goto next_buffer
+    end
+
+    local rel_path = vim.fn.fnamemodify(name, ":.")
+    if vim.fn.getftype(rel_path) == "" then
+      goto next_buffer
+    end
+
+    if not seen[rel_path] then
+      table.insert(paths, rel_path)
+      seen[rel_path] = true
+    end
+    ::next_buffer::
   end
-  return files
+  return paths
 end
 
 local function get_selection_metadata(line1, line2)
@@ -46,7 +58,7 @@ local function open_prompt_window(title, on_submit)
   vim.fn.bufload(buf)
 
   vim.api.nvim_buf_set_option(buf, "buflisted", false)
-  vim.api.nvim_buf_set_option(buf, "filetype", "markdown")
+  vim.api.nvim_buf_set_option(buf, "filetype", "coder")
   vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
 
   local width = math.floor(vim.o.columns * 0.7)
@@ -87,7 +99,10 @@ local function open_prompt_window(title, on_submit)
 
     executed = true
     cleanup()
-    pcall(vim.api.nvim_buf_delete, buf, { force = true })
+
+    if vim.api.nvim_buf_is_valid(buf) then
+      pcall(vim.api.nvim_buf_delete, buf, { force = true })
+    end
 
     if vim.trim(prompt_content) ~= "" then
       vim.schedule(function()
@@ -161,11 +176,11 @@ function M.ask(opts)
     return
   end
 
-  local files = get_buffer_files()
+  local context_paths = get_context_paths()
 
   if not is_visual then
     local cmd_parts = { M.config.coder_bin }
-    for _, f in ipairs(files) do
+    for _, f in ipairs(context_paths) do
       table.insert(cmd_parts, vim.fn.shellescape(f))
     end
     run_coder(cmd_parts)
@@ -193,7 +208,7 @@ function M.ask(opts)
       "-p",
       vim.fn.shellescape(final_prompt),
     }
-    for _, f in ipairs(files) do
+    for _, f in ipairs(context_paths) do
       table.insert(cmd_parts, vim.fn.shellescape(f))
     end
     run_coder(cmd_parts)

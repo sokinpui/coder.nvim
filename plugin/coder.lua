@@ -3,6 +3,6 @@ if vim.g.loaded_coder == 1 then
 end
 vim.g.loaded_coder = 1
 
-vim.api.nvim_create_user_command("CoderAsk", function(opts)
+vim.api.nvim_create_user_command("Coder", function(opts)
   require("coder").ask(opts)
 end, { range = true })
