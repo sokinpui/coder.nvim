@@ -50,6 +50,7 @@ function M.open_prompt(title, config, on_submit)
 		if state.executed then
 			return
 		end
+		vim.cmd("stopinsert")
 		local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 		local prompt_content = table.concat(lines, "\n")
 
@@ -100,6 +101,7 @@ function M.open_prompt(title, config, on_submit)
 	keymap.setup_prompt_keymaps(buf, {
 		submit = submit,
 		close = function()
+			vim.cmd("stopinsert")
 			vim.api.nvim_win_close(win, true)
 		end,
 	}, config.keymaps)
