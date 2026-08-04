@@ -9,7 +9,47 @@ A Neovim plugin for the [AI coding TUI `coder`](https://github.com/sokinpui/code
 
 ## Installation
 
-<!-- todo -->
+Using [lazy.nvim](https://github.com/folke/lazy.nvim):
+
+### Basic Setup
+
+```lua
+{
+    "sokinpui/coder.nvim",
+    opts = {
+        -- your configuration here
+    },
+}
+```
+
+### Lazy Loading (Recommended)
+
+You can lazy load the plugin on specific commands or keymaps to keep your startup time fast.
+
+```lua
+{
+    "sokinpui/coder.nvim",
+    cmd = {
+        "Coder",
+        "CoderChat",
+        "CoderSession",
+        "CoderClose",
+    },
+    keys = {
+        { "<leader>cc", "<cmd>CoderChat<cr>", desc = "Coder Chat" },
+        { "<leader>cs", "<cmd>CoderSession<cr>", desc = "Coder Session" },
+        {
+            "<leader>ca",
+            ":Coder<cr>",
+            mode = { "n", "v" },
+            desc = "Coder Prompt (Contextual)",
+        },
+    },
+    opts = {
+        exec_mode = "tmux", -- or "terminal"
+    },
+}
+```
 
 ## Default Configuration
 
