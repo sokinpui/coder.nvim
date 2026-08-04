@@ -24,7 +24,10 @@ require("coder").setup({
     exec_mode = "tmux",
 
     -- Split direction for Neovim terminal: "horizontal" or "vertical"
-    terminal_split = "horizontal",
+    terminal_split = "vertical",
+
+    -- Width of the vertical terminal split
+    terminal_width = 50,
 
     -- Keymaps for the prompt window
     keymaps = {
@@ -43,6 +46,7 @@ require("coder").setup({
 | `:Coder`        | Opens a floating window to input a prompt. Passes open buffers as context.    |
 | `:'<,'>Coder`   | (Visual Mode) Same as above, but includes the selected text and line numbers. |
 | `:CoderChat`    | Opens the `coder chat` interface in the configured execution mode.            |
+| `:CoderClose`   | Closes the active `coder` terminal or tmux pane.                              |
 | `:CoderSession` | Opens the base `coder` session in the configured execution mode.              |
 
 ## How it works

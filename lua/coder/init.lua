@@ -18,6 +18,10 @@ function M.chat()
 	executor.run({ "chat" }, config.options)
 end
 
+function M.close()
+	executor.close()
+end
+
 function M.run(opts)
 	opts = opts or {}
 

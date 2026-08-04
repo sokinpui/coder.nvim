@@ -4,6 +4,7 @@ M.options = {
 	coder_bin = "coder",
 	exec_mode = "tmux",
 	terminal_split = "horizontal",
+	terminal_width = 50,
 	keymaps = {
 		submit = "<C-j>",
 		close = "q",

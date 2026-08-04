@@ -12,6 +12,10 @@ function M.setup()
 	vim.api.nvim_create_user_command("CoderSession", function()
 		require("coder").session()
 	end, {})
+
+	vim.api.nvim_create_user_command("CoderClose", function()
+		require("coder").close()
+	end, {})
 end
 
 return M
