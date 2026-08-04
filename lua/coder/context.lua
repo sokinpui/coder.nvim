@@ -30,6 +30,10 @@ function M.get_files()
 end
 
 function M.get_selection(line1, line2)
+	if not line1 or not line2 then
+		return nil
+	end
+
 	local file = vim.api.nvim_buf_get_name(0)
 	local rel_path = vim.fn.fnamemodify(file, ":.")
 	local lines = vim.api.nvim_buf_get_lines(0, line1 - 1, line2, false)

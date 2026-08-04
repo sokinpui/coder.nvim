@@ -36,11 +36,11 @@ You can lazy load the plugin on specific commands or keymaps to keep your startu
         "CoderClose",
     },
     keys = {
-        { "<leader>cc", "<cmd>CoderChat<cr>", desc = "Coder Chat" },
-        { "<leader>cs", "<cmd>CoderSession<cr>", desc = "Coder Session" },
+        { "<leader>cc", "<cmd>CoderChat<CR>", desc = "Coder Chat" },
+        { "<leader>cs", "<cmd>CoderSession<CR>", desc = "Coder Session" },
         {
             "<leader>ca",
-            ":Coder<cr>",
+            "<cmd>Coder<CR>",
             mode = { "n", "v" },
             desc = "Coder Prompt (Contextual)",
         },

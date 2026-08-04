@@ -27,15 +27,28 @@ function M.run(opts)
 
 	local current_file = vim.api.nvim_buf_get_name(0)
 	local rel_current_file = vim.fn.fnamemodify(current_file, ":.")
-	local is_visual = (opts.range and opts.range > 0)
+
+	local selection = nil
+	if opts.range and opts.range > 0 then
+		selection = context.get_selection(opts.line1, opts.line2)
+	else
+		local mode = vim.api.nvim_get_mode().mode
+		if mode:find("^[vV]") or mode:find("^\22") then
+			local line1 = vim.fn.line("v")
+			local line2 = vim.fn.line(".")
+			if line1 > line2 then
+				line1, line2 = line2, line1
+			end
+			selection = context.get_selection(line1, line2)
+		end
+	end
 
 	ui.open_prompt(" Coder ", config.options, function(user_prompt)
 		local context_metadata = string.format("User is watching this file: `%s`", rel_current_file)
 
-		if is_visual then
-			local selection = context.get_selection(opts.line1, opts.line2)
+		if selection then
 			context_metadata = string.format(
-				"In file `%s`, lines %d to %d:\n```\n%s\n```",
+				"In file `%s`, user highlight lines %d to %d and ask:\n```\n%s\n```",
 				selection.file,
 				selection.start_line,
 				selection.end_line,
@@ -43,7 +56,7 @@ function M.run(opts)
 			)
 		end
 
-		local final_prompt = string.format("%s\n\nUser request: %s", context_metadata, user_prompt)
+		local final_prompt = string.format("%s\n\nUser:\n%s", context_metadata, user_prompt)
 		executor.run({ "-p", vim.fn.shellescape(final_prompt) }, config.options)
 	end)
 end
