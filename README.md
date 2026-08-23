@@ -49,6 +49,12 @@ You can lazy load the plugin on specific commands or keymaps to keep your startu
             mode = { "n", "v" },
             desc = "Coder Prompt",
         },
+        {
+            "<leader>cd",
+            "<cmd>CoderDiagnostics<CR>",
+            mode = { "n", "v" },
+            desc = "Send Diagnostics to Coder",
+        },
     },
     opts = {},
 }
@@ -88,6 +94,7 @@ require("coder").setup({
         close = "q",
         toggle = "<C-p>",
         prompt = "<leader>ca",
+        diagnostics = "<leader>cd",
         add_file = "<leader>cf",
     },
 })
@@ -96,10 +103,11 @@ require("coder").setup({
 ## Commands
 
 | Command            | Description                                                                   |
-| ------------------ | ----------------------------------------------------------------------------- |
+| :----------------- | :---------------------------------------------------------------------------- |
 | `:CoderToggle`     | Toggles the persistent Coder TUI window without restarting the session.       |
 | `:Coder`           | Opens a floating window to input a prompt. Passes open buffers as context.    |
 | `:'<,'>Coder`      | (Visual Mode) Same as above, but includes the selected text and line numbers. |
+| `:CoderDiagnostics`| Sends current buffer or range diagnostics to a new Coder session.            |
 | `:CoderAddCurrent` | Injects `/file <current_file>` directly into the active Coder instance.       |
 | `:CoderClose`      | Closes the active `coder` terminal or tmux pane.                              |
 

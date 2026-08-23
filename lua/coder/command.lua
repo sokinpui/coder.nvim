@@ -9,6 +9,10 @@ function M.setup()
 		require("coder").run(opts)
 	end, { range = true, nargs = "*" })
 
+	vim.api.nvim_create_user_command("CoderDiagnostics", function(opts)
+		require("coder").diagnostics(opts)
+	end, { range = true, nargs = "*" })
+
 	vim.api.nvim_create_user_command("CoderSession", function()
 		require("coder").session()
 	end, {})

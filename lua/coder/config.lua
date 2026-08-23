@@ -20,6 +20,7 @@ M.options = {
 		close = "q",
 		toggle = "<C-p>",
 		prompt = "<leader>ca",
+		diagnostics = "<leader>cd",
 		add_file = "<leader>cf",
 	},
 }
