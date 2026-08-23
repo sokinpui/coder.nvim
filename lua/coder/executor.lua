@@ -34,8 +34,8 @@ end
 local function create_window(config, buf)
 	local mode = config.exec_mode
 	if mode == "float" then
-		local width = math.floor(vim.o.columns * (config.float.width or 0.85))
-		local height = math.floor(vim.o.lines * (config.float.height or 0.85))
+		local width = math.floor(vim.o.columns * (config.float.width or 0.75))
+		local height = math.floor(vim.o.lines * (config.float.height or 0.75))
 		local row = math.floor((vim.o.lines - height) / 2)
 		local col = math.floor((vim.o.columns - width) / 2)
 		return vim.api.nvim_open_win(buf, true, {

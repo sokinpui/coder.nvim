@@ -8,8 +8,8 @@ function M.open_prompt(title, config, on_submit)
 	vim.bo[buf].filetype = "markdown"
 	vim.bo[buf].bufhidden = "wipe"
 
-	local width = math.floor(vim.o.columns * ((config.float and config.float.width) or 0.7))
-	local height = math.floor(vim.o.lines * ((config.float and config.float.height) or 0.4))
+	local width = math.floor(vim.o.columns * ((config.float and config.float.prompt_width) or 0.6))
+	local height = math.floor(vim.o.lines * ((config.float and config.float.prompt_height) or 0.35))
 	local row = math.floor((vim.o.lines - height) / 2)
 	local col = math.floor((vim.o.columns - width) / 2)
 

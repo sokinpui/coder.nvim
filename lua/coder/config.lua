@@ -9,8 +9,10 @@ M.options = {
 		height = 15,
 	},
 	float = {
-		width = 0.85,
-		height = 0.85,
+		width = 0.75,
+		height = 0.75,
+		prompt_width = 0.6,
+		prompt_height = 0.35,
 		border = "rounded",
 	},
 	auto_reload = true,
