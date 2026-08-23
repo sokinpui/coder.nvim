@@ -166,7 +166,7 @@ function M.open(args, config)
 
 	state.chan_id = vim.fn.termopen(cmd_str, {
 		env = {
-			CODER_OPEN_CMD = "nvim --server " .. vim.v.servername .. " --remote",
+			CODER_OPEN_CMD = 'for f in "$@"; do nvim --server ' .. vim.fn.shellescape(vim.v.servername) .. ' --remote-expr "v:lua.require(\'coder.executor\').open_file(\'"$f"\')"; done',
 		},
 		on_exit = function()
 			state.chan_id = nil
@@ -182,6 +182,31 @@ function M.open(args, config)
 	keymap.setup_terminal_keymaps(buf, config.passthrough_keys)
 	vim.cmd("startinsert")
 	return state.chan_id
+end
+
+function M.open_file(filepath)
+	if not filepath or filepath == "" then
+		return ""
+	end
+
+	local target_win = state.prev_win
+	if not target_win or not vim.api.nvim_win_is_valid(target_win) or target_win == state.terminal_win then
+		for _, win in ipairs(vim.api.nvim_list_wins()) do
+			if win ~= state.terminal_win and vim.api.nvim_win_get_config(win).relative == "" then
+				target_win = win
+				break
+			end
+		end
+	end
+
+	if target_win and vim.api.nvim_win_is_valid(target_win) then
+		vim.api.nvim_set_current_win(target_win)
+	else
+		vim.cmd("wincmd p")
+	end
+
+	vim.cmd("edit " .. vim.fn.fnameescape(filepath))
+	return ""
 end
 
 function M.send(text, config, new_session)
