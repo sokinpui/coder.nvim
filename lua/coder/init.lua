@@ -10,12 +10,26 @@ function M.setup(opts)
 	require("coder.command").setup()
 end
 
+function M.toggle()
+	executor.toggle(config.options)
+end
+
 function M.session()
-	executor.run({}, config.options)
+	executor.open({}, config.options)
 end
 
 function M.chat()
-	executor.run({ "chat" }, config.options)
+	executor.open({ "--chat" }, config.options)
+end
+
+function M.add_current_file()
+	local current_file = vim.api.nvim_buf_get_name(0)
+	if current_file == "" then
+		return
+	end
+	local rel_path = vim.fn.fnamemodify(current_file, ":.")
+	executor.send("/file " .. rel_path, config.options, false)
+	vim.notify("[Coder] Added file to context: " .. rel_path, vim.log.levels.INFO)
 end
 
 function M.close()
@@ -26,7 +40,7 @@ function M.run(opts)
 	opts = opts or {}
 
 	local current_file = vim.api.nvim_buf_get_name(0)
-	local rel_current_file = vim.fn.fnamemodify(current_file, ":.")
+	local rel_current_file = current_file ~= "" and vim.fn.fnamemodify(current_file, ":.") or ""
 
 	local selection = nil
 	if opts.range and opts.range > 0 then
@@ -43,22 +57,43 @@ function M.run(opts)
 		end
 	end
 
-	ui.open_prompt(" Coder ", config.options, function(user_prompt)
-		local context_metadata = string.format("User is watching this file: `%s`", rel_current_file)
+	local function execute_prompt(user_prompt)
+		local prompt_parts = {}
 
-		if selection then
-			context_metadata = string.format(
-				"In file `%s`, user highlight lines %d to %d and ask:\n```\n%s\n```",
-				selection.file,
-				selection.start_line,
-				selection.end_line,
-				selection.content
+		if selection and selection.content ~= "" then
+			local file_ext = vim.fn.fnamemodify(selection.file, ":e")
+			table.insert(
+				prompt_parts,
+				string.format(
+					"In `%s` (lines %d-%d):\n```%s\n%s\n```",
+					selection.file,
+					selection.start_line,
+					selection.end_line,
+					file_ext,
+					selection.content
+				)
 			)
+		elseif rel_current_file ~= "" and vim.fn.filereadable(current_file) == 1 then
+			table.insert(prompt_parts, string.format("Regarding `%s`:", rel_current_file))
 		end
 
-		local final_prompt = string.format("%s\n\nUser:\n%s", context_metadata, user_prompt)
-		executor.run({ "-p", vim.fn.shellescape(final_prompt) }, config.options)
-	end)
+		table.insert(prompt_parts, user_prompt)
+		local final_prompt = table.concat(prompt_parts, "\n\n")
+
+		if config.options.exec_mode == "tmux" then
+			executor.run({ "-p", vim.fn.shellescape(final_prompt) }, config.options)
+		else
+			executor.send(final_prompt, config.options, true)
+		end
+	end
+
+	if opts.args and vim.trim(opts.args) ~= "" then
+		execute_prompt(opts.args)
+	else
+		ui.open_prompt("Coder", config.options, function(user_prompt)
+			execute_prompt(user_prompt)
+		end)
+	end
 end
 
 return M

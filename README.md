@@ -2,27 +2,32 @@
 
 A Neovim plugin for the [AI coding TUI `coder`](https://github.com/sokinpui/coder).
 
+`coder.nvim` seamlessly integrates the interactive Coder TUI with Neovim as a persistent, toggleable sidebar or floating window with bi-directional IPC support.
+
 ## Prerequisites
 
-- [`coder` CLI](https://github.com/example/coder) installed and available in your `$PATH`.
+- [`coder` CLI](https://github.com/sokinpui/coder) installed and available in your `$PATH`.
 - (Optional) `tmux` for `exec_mode = "tmux"`.
 
 ## Installation
 
 Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
-### Basic Setup
-
 ```lua
 {
     "sokinpui/coder.nvim",
     opts = {
-        -- your configuration here
+        exec_mode = "terminal", -- "terminal" | "float" | "tmux"
+        terminal = {
+            split = "vertical",
+            width = 55,
+        },
+        auto_reload = true,
     },
 }
 ```
 
-### Lazy Loading (Recommended)
+### Lazy-loading Configuration
 
 You can lazy load the plugin on specific commands or keymaps to keep your startup time fast.
 
@@ -30,66 +35,76 @@ You can lazy load the plugin on specific commands or keymaps to keep your startu
 {
     "sokinpui/coder.nvim",
     cmd = {
+        "CoderToggle",
         "Coder",
-        "CoderChat",
-        "CoderSession",
+        "CoderAddCurrent",
         "CoderClose",
     },
     keys = {
-        { "<leader>cc", "<cmd>CoderChat<CR>", desc = "Coder Chat" },
-        { "<leader>cs", "<cmd>CoderSession<CR>", desc = "Coder Session" },
+        { "<C-p>", "<cmd>CoderToggle<CR>", mode = { "n", "v" }, desc = "Toggle Coder TUI" },
+        { "<leader>cf", "<cmd>CoderAddCurrent<CR>", desc = "Add current file to Coder context" },
         {
             "<leader>ca",
             "<cmd>Coder<CR>",
             mode = { "n", "v" },
-            desc = "Coder Prompt (Contextual)",
+            desc = "Coder Prompt",
         },
     },
-    opts = {
-        exec_mode = "tmux", -- or "terminal"
-    },
+    opts = {},
 }
 ```
 
-## Default Configuration
+## Configuration
+
+Default options:
 
 ```lua
 require("coder").setup({
     -- Path to the coder executable
     coder_bin = "coder",
 
-    -- Execution mode: "tmux" or "terminal"
-    -- "tmux" opens a split in your current tmux session
-    -- "terminal" opens a Neovim terminal split
-    exec_mode = "tmux",
+    -- Execution mode: "terminal", "float", or "tmux"
+    exec_mode = "terminal",
 
-    -- Split direction for Neovim terminal: "horizontal" or "vertical"
-    terminal_split = "vertical",
+    -- Configuration for terminal split drawer
+    terminal = {
+        split = "vertical", -- "vertical" | "horizontal"
+        width = 55,
+        height = 15,
+    },
 
-    -- Width of the vertical terminal split
-    terminal_width = 50,
+    -- Configuration for floating window
+    float = {
+        width = 0.85,
+        height = 0.85,
+        border = "rounded",
+    },
 
-    -- Keymaps for the prompt window
+    -- Automatically run checktime when switching away from Coder (applies ITF changes immediately)
+    auto_reload = true,
+    passthrough_keys = { "<C-h>", "<C-v>" },
     keymaps = {
         submit = "<C-j>",
         close = "q",
+        toggle = "<C-p>",
+        prompt = "<leader>ca",
+        add_file = "<leader>cf",
     },
 })
 ```
 
-## Usage
+## Commands
 
-### Commands
+| Command            | Description                                                                   |
+| ------------------ | ----------------------------------------------------------------------------- |
+| `:CoderToggle`     | Toggles the persistent Coder TUI window without restarting the session.       |
+| `:Coder`           | Opens a floating window to input a prompt. Passes open buffers as context.    |
+| `:'<,'>Coder`      | (Visual Mode) Same as above, but includes the selected text and line numbers. |
+| `:CoderAddCurrent` | Injects `/file <current_file>` directly into the active Coder instance.       |
+| `:CoderClose`      | Closes the active `coder` terminal or tmux pane.                              |
 
-| Command         | Description                                                                   |
-| --------------- | ----------------------------------------------------------------------------- |
-| `:Coder`        | Opens a floating window to input a prompt. Passes open buffers as context.    |
-| `:'<,'>Coder`   | (Visual Mode) Same as above, but includes the selected text and line numbers. |
-| `:CoderChat`    | Opens the `coder chat` interface in the configured execution mode.            |
-| `:CoderClose`   | Closes the active `coder` terminal or tmux pane.                              |
-| `:CoderSession` | Opens the base `coder` session in the configured execution mode.              |
+## Bi-Directional Features
 
-## How it works
-
-1.  **Context Gathering**: The plugin scans all loaded buffers in your current Neovim session and collects their relative file paths.
-2.  **Execution**: Upon submission, it constructs a command: `coder <context_paths> -p <your_prompt>` and executes it in the specified `exec_mode`.
+1. **Persistent Session**: Coder runs in a persistent background terminal buffer. Hiding or showing the window maintains the running model state and chat history.
+2. **Neovim RPC Integration**: Searching files inside Coder with `Ctrl+F` targets the parent Neovim window directly (`:edit <file>`) instead of spawning nested editors.
+3. **Auto Buffer Reload**: When code modifications are applied via `Ctrl+A` (`itf`) inside Coder, Neovim automatically detects the disk updates without prompting.
